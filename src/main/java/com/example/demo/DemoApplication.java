@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,13 +26,17 @@ public class DemoApplication
     {
         return input ->
         {
-            final Flux<Message<String>> out1 =
-                input.getT1().map(m -> MessageBuilder.withPayload(m.getPayload().toUpperCase()).build());
-
-            final Flux<Message<String>> out2 =
-                input.getT2().map(m -> MessageBuilder.withPayload(m.getPayload().toLowerCase()).build());
+            final Flux<Message<String>> out1 = input.getT1().map(buildMessage(String::toUpperCase));
+            final Flux<Message<String>> out2 = input.getT2().map(buildMessage(String::toLowerCase));
 
             return Tuples.of(out1, out2);
         };
+    }
+
+    private UnaryOperator<Message<String>> buildMessage(final UnaryOperator<String> operator)
+    {
+        return m -> MessageBuilder.withPayload(operator.apply(m.getPayload()))
+                                  .setHeader("partitionKey", m.getPayload())
+                                  .build();
     }
 }
