@@ -13,10 +13,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 
-@SpringBootTest
 @Import(TestChannelBinderConfiguration.class)
-class DemoApplicationTests
+abstract class DemoApplicationTests
 {
+    @SpringBootTest
+    public static class PartioningDisabled extends DemoApplicationTests
+    {
+    }
+
+    @SpringBootTest(properties = "spring.cloud.stream.default.producer.partitionKeyExpression=headers['partitionKey']")
+    public static class PartioningEnabled extends DemoApplicationTests
+    {
+    }
+
     @Autowired
     InputDestination input;
 
